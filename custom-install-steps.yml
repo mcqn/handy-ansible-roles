@@ -1,0 +1,20 @@
+---
+- name: Ansible template for a Raspberry Pi
+  hosts: controlled-pi
+  vars:
+    pi_name: pixelcheer
+  remote_user: pi
+  become: yes
+  become_method: sudo
+  # Include whichever roles make sense here
+  #roles:
+  #  - base-nodered
+  #  - ssh-tunnel
+
+  pre_tasks:
+    - name: Update apt
+      apt: upgrade=dist update_cache=yes
+      become: true
+
+  tasks:
+  - name: msg='Replace this step with the ones you need to set up the Raspberry Pi to do what you want it to do'
