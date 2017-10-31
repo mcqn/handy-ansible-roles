@@ -1,0 +1,38 @@
+# Install autossh (on a Raspberry Pi)
+# Assumes you define the role with the remote end of the tunnel as variables, e.g.
+#   vars:
+#     tunnel_user: REPLACE-THIS-WITH-THE-REMOTE-USERNAME
+#     tunnel_server: REPLACE-THIS-WITH-THE-REMOTE-SERVER-NAME
+#   roles:
+#   - { role: ssh-tunnel }
+---
+  - name: Install autossh
+    apt: name=autossh state=present
+  - name: Create ssh key
+    command: ssh-keygen -t rsa -f /home/pi/.ssh/id_rsa -N '' creates=/home/pi/.ssh/id_rsa
+  - name: Retrieve public ssh key
+    fetch: src=/home/pi/.ssh/id_rsa.pub dest=pi_id_rsa.pub flat=yes
+  - debug: msg="Copy pi_id_rsa.pub to {{ tunnel_server}}'s authorized keys, with options >>no-pty,no-X11-forwarding,permitopen=\"localhost:2222\",command=\"/bin/echo do-not-send-commands\"<<"
+  - name: Create tunnel directory
+    file: path=/etc/tunnel state=directory mode=0700
+  - name: Copy tunnel script across
+    synchronize: src=files/etc_tunnel_tunnel.sh dest=/etc/tunnel/tunnel.sh perms=yes
+  - name: Update the server to which the tunnel should connect
+    replace:
+      dest: /etc/tunnel/tunnel.sh
+      regexp: 'tunneluser@tunnelserver'
+      replace: "{{ tunnel_user}}@{{ tunnel_server }}"
+  - name: Set the ssh key for the tunnel
+    command: cp /home/pi/.ssh/id_rsa /etc/tunnel creates=/etc/tunnel/id_rsa
+  - name: Ensure the ssh key has the right permissions
+    file: path=/etc/tunnel/id_rsa mode=0700
+  - name: Set up the script to start the tunnel
+    blockinfile:
+      dest: /etc/rc.local
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      insertbefore: "exit 0"
+      content: |
+        # Start the SSH tunnel to {{ tunnel_server }}
+        sleep 30 # give the network some time to come up
+        /etc/tunnel/tunnel.sh > /var/user_tunnel.log 2>&1
+        echo autossh to {{ tunnel_server }} started
