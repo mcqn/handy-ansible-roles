@@ -27,3 +27,4 @@ These are some of the roles (sets of Ansible commands to fulfil a particular fun
 
  * **base-nodered** Bare minimum Node RED installation, which runs automatically when the Pi is started up
  * **renamed-pi** Change the hostname of the Pi
+ * **nm-wireless** Use NetworkManager to configure networking, and pre-define Wifi network details.  Copy `roles/nm-wireless/vars/main-example.yml` to `roles/nm-wireless/vars/main.yml` and edit it to include the details of the Wifi networks to be set up
