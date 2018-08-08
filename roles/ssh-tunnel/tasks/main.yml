@@ -13,6 +13,15 @@
   - name: Retrieve public ssh key
     fetch: src=/home/pi/.ssh/id_rsa.pub dest=pi_id_rsa.pub flat=yes
   - debug: msg="Copy pi_id_rsa.pub to {{ tunnel_server}}'s authorized keys, with options >>no-pty,no-X11-forwarding,permitopen=\"localhost:2222\",command=\"/bin/echo do-not-send-commands\"<<"
+  - debug: msg="In the /etc/ssh/sshd_config file on {{ tunnel_server}} turn on the TCPKeepAlive, ClientAliveInterval and ClientAliveCountMax options"
+  - name: Set ssh config options to notice if the connection drops
+    blockinfile:
+      dest: /etc/ssh/ssh_config
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      insertafter: EOF
+      content: |
+        ServerAliveInterval 120
+        ServerAliveCountMax 4
   - name: Create tunnel directory
     file: path=/etc/tunnel state=directory mode=0700
   - name: Copy tunnel script across
