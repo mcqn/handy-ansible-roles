@@ -17,4 +17,5 @@
       become: true
 
   tasks:
-  - name: msg='Replace this step with the ones you need to set up the Raspberry Pi to do what you want it to do'
+  - name: Ready for you to customise!
+    debug: msg='Replace this step with the ones you need to set up the Raspberry Pi to do what you want it to do'
